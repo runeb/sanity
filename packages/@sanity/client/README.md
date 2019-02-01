@@ -23,14 +23,25 @@ const sanityClient = require('@sanity/client')
 const client = sanityClient({
   projectId: 'your-project-id',
   dataset: 'bikeshop',
-  token: 'sanity-auth-token', // or leave blank to be anonymous user
+  apiVersion: '2019-01-29', // use current UTC date - see "specifying API version"!
+  token: 'sanity-auth-token', // or leave blank for unauthenticated usage
   useCdn: true // `false` if you want to ensure fresh data
 })
 ```
 
 `const client = sanityClient(options)`
 
-Initializes a new Sanity Client. Required options are `projectId` and `dataset`.
+Initializes a new Sanity Client. Required options are `projectId`, `dataset` and `apiVersion`. Setting a value for `useCdn` is encouraged.
+
+### Specifying API version
+
+Sanity uses ISO dates (YYYY-MM-DD) in UTC timezone for versioning. The explanation for this can be found [in the documentation](http://sanity.io/help/api-versioning)
+
+In general, unless you know what API version you want to use, you'll want to set it to todays UTC date. By doing this, you'll get all the latest bugfixes and features, while preventing any timezone confusion and locking the API to prevent breaking changes.
+
+**Note**: Do not be tempted to use a dynamic value for the `apiVersion`. The whole reason for setting a static value is to prevent unexpected, breaking changes.
+
+In future versions, specifying an API version will be required. For now (to maintain backwards compatiblity) not specifying a version will trigger a deprecation warning and fall back to using `v1`.
 
 ### Fetch a single document
 
@@ -64,11 +75,10 @@ Perform a query using the given parameters (if any).
 const query = '*[_type == "comment" && authorId != $ownerId]'
 const params = {ownerId: 'bikeOwnerUserId'}
 
-const subscription = client.listen(query, params)
-  .subscribe(comment => {
-    console.log(`${comment.author} commented: ${comment.text}`)
-  })
-  
+const subscription = client.listen(query, params).subscribe(comment => {
+  console.log(`${comment.author} commented: ${comment.text}`)
+})
+
 // to unsubscribe later on
 subscription.unsubscribe()
 ```
@@ -81,7 +91,7 @@ The update events which are emitted always contain `mutation`, which is an objec
 
 By default, the emitted update event will also contain a `result` property, which contains the document with the mutation applied to it. In case of a delete mutation, this property will not be present, however. You can also tell the client not to return the document (to save bandwidth, or in cases where the mutation or the document ID is the only relevant factor) by setting the `includeResult` property to `false` in the options.
 
-Likewise, you can also have the client return the document *before* the mutation was applied, by setting`includePreviousRevision` to `true` in the options, which will include a `previous` property in each emitted object.
+Likewise, you can also have the client return the document _before_ the mutation was applied, by setting `includePreviousRevision` to `true` in the options, which will include a `previous` property in each emitted object.
 
 ### Creating documents
 
@@ -99,8 +109,7 @@ client.create(doc).then(res => {
 
 `client.create(doc)`
 
-Create a document. Argument is a plain JS object representing the document. It must contain a `_type` attribute. It *may* contain an `_id`. If an ID is not specified, it will automatically be created.
-
+Create a document. Argument is a plain JS object representing the document. It must contain a `_type` attribute. It _may_ contain an `_id`. If an ID is not specified, it will automatically be created.
 
 ### Creating/replacing documents
 
@@ -139,7 +148,6 @@ client.createIfNotExists(doc).then(res => {
 `client.createIfNotExists(doc)`
 
 If you want to create a document if it does not already exist, but fall back without error if it does, you can use the `createIfNotExists()` method. When using this method, the document must contain an `_id` attribute.
-
 
 ### Patch/update a document
 
@@ -230,16 +238,15 @@ const nanoid = require('nanoid')
 client
   .patch('bike-123')
   .setIfMissing({reviews: []})
-  .append('reviews', [
-    {_key: nanoid(), title: 'Great bike!', stars: 5}
-  ])
+  .append('reviews', [{_key: nanoid(), title: 'Great bike!', stars: 5}])
   .commit()
 ```
 
 ### Delete a document
 
 ```js
-client.delete('bike-123')
+client
+  .delete('bike-123')
   .then(res => {
     console.log('Bike deleted')
   })
@@ -255,9 +262,7 @@ Delete a document. Parameter is a document ID.
 ### Multiple mutations in a transaction
 
 ```js
-const namePatch = client
-  .patch('bike-310')
-  .set({name: 'A Bike To Go'})
+const namePatch = client.patch('bike-310').set({name: 'A Bike To Go'})
 
 client
   .transaction()
@@ -294,7 +299,6 @@ client
 `client.transaction().create(doc).patch(docId, p => p.set(partialDoc)).commit()`
 
 A `patch` can be performed inline on a `transaction`.
-
 
 ### Clientless patches & transactions
 
@@ -423,10 +427,9 @@ client.delete(id: string): Promise
 ```
 
 ```js
-client.delete('image-abc123_someAssetId-500x500-png')
-  .then(result => {
-    console.log('deleted imageAsset', result)
-  })
+client.delete('image-abc123_someAssetId-500x500-png').then(result => {
+  console.log('deleted imageAsset', result)
+})
 ```
 
 ### Get client configuration
@@ -439,7 +442,6 @@ console.log(config.dataset)
 `client.config()`
 
 Get client configuration.
-
 
 ### Set client configuration
 

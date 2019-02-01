@@ -1,4 +1,4 @@
-/* eslint-disable strict */
+/* eslint-disable strict, import/no-unassigned-import */
 // (Node 4 compat)
 
 'use strict'
@@ -26,6 +26,7 @@ const projectHost = projectId => `https://${projectId || defaultProjectId}.${api
 const clientConfig = {
   apiHost: `https://${apiHost}`,
   projectId: 'bf1942',
+  apiVersion: '1',
   dataset: 'foo',
   useCdn: false
 }
@@ -58,7 +59,7 @@ test('can get and set config', t => {
   const client = sanityClient({projectId: 'abc123'})
   t.equal(client.config().projectId, 'abc123', 'constructor opts are set')
   t.equal(client.config({projectId: 'def456'}), client, 'returns client on set')
-  t.equal(client.config().projectId, 'def456', 'new config is set')
+  t.equal(client.config().projectId, 'def456', 'new config _type == set')
   t.end()
 })
 
@@ -90,7 +91,7 @@ test('can clone client', t => {
   t.end()
 })
 
-test('throws if no projectId is set', t => {
+test('throws if no projectId _type == set', t => {
   t.throws(sanityClient, /projectId/)
   t.end()
 })
@@ -108,6 +109,15 @@ test('throws on invalid dataset names', t => {
   t.end()
 })
 
+test('throws on future api version dates', t => {
+  t.throws(
+    () =>
+      sanityClient({projectId: 'abc123', dataset: 'foo', useCdn: true, apiVersion: '2099-12-13'}),
+    /future.*2099-12-13/
+  )
+  t.end()
+})
+
 test('can use request() for API-relative requests', t => {
   nock(projectHost())
     .get('/v1/ping')
@@ -120,8 +130,28 @@ test('can use request() for API-relative requests', t => {
     .then(t.end)
 })
 
+test('can use request() for API-relative requests (custom api version)', t => {
+  nock(projectHost())
+    .get('/v2019-01-29/ping')
+    .reply(200, {pong: true})
+
+  getClient({apiVersion: '2019-01-29'})
+    .request({uri: '/ping'})
+    .then(res => t.equal(res.pong, true))
+    .catch(t.ifError)
+    .then(t.end)
+})
+
 test('can use getUrl() to get API-relative paths', t => {
   t.equal(getClient().getUrl('/bar/baz'), `${projectHost()}/v1/bar/baz`)
+  t.end()
+})
+
+test('can use getUrl() to get API-relative paths (custom api version)', t => {
+  t.equal(
+    getClient({apiVersion: '2019-01-29'}).getUrl('/bar/baz'),
+    `${projectHost()}/v2019-01-29/bar/baz`
+  )
   t.end()
 })
 
@@ -153,6 +183,26 @@ test('can request list of projects', t => {
     .reply(200, [{projectId: 'foo'}, {projectId: 'bar'}])
 
   const client = sanityClient({useProjectHostname: false, apiHost: `https://${apiHost}`})
+  client.projects
+    .list()
+    .then(projects => {
+      t.equal(projects.length, 2, 'should have two projects')
+      t.equal(projects[0].projectId, 'foo', 'should have project id')
+    })
+    .catch(t.ifError)
+    .then(t.end)
+})
+
+test('can request list of projects (custom api version)', t => {
+  nock(`https://${apiHost}`)
+    .get('/v2019-01-29/projects')
+    .reply(200, [{projectId: 'foo'}, {projectId: 'bar'}])
+
+  const client = sanityClient({
+    useProjectHostname: false,
+    apiHost: `https://${apiHost}`,
+    apiVersion: '2019-01-29'
+  })
   client.projects
     .list()
     .then(projects => {
@@ -292,7 +342,7 @@ test('handles api errors gracefully', t => {
   const response = {
     statusCode: 403,
     error: 'Forbidden',
-    message: 'You are not allowed to access this resource'
+    message: 'You are not allowed to access th_type == resource'
   }
 
   nock(projectHost())
@@ -363,7 +413,7 @@ test('can query for single document', t => {
     .then(t.end)
 })
 
-test('gives http statuscode as error if no body is present on errors', t => {
+test('gives http statuscode as error if no body _type == present on errors', t => {
   nock(projectHost())
     .get('/v1/data/doc/foo/abc123')
     .reply(400)
@@ -640,7 +690,7 @@ test('uses GET for queries below limit', t => {
   }
 
   // Again, just... don't do this.
-  const query = `*[is "beer" && (${clause.join(' || ')})]`
+  const query = `*[_type == "beer" && (${clause.join(' || ')})]`
 
   nock(projectHost())
     .get('/v1/data/query/foo')
@@ -671,7 +721,7 @@ test('uses POST for long queries', t => {
   }
 
   // Again, just... don't do this.
-  const query = `*[is "beer" && (${clause.join(' || ')})]`
+  const query = `*[_type == "beer" && (${clause.join(' || ')})]`
 
   nock(projectHost())
     .filteringRequestBody(/.*/, '*')
@@ -779,7 +829,7 @@ test('can apply unset()', t => {
   t.end()
 })
 
-test('throws if non-array is passed to unset()', t => {
+test('throws if non-array _type == passed to unset()', t => {
   t.throws(
     () =>
       getClient()
@@ -948,7 +998,7 @@ test('all patch methods throw on non-objects being passed as argument', t => {
   t.end()
 })
 
-test('executes patch when commit() is called', t => {
+test('executes patch when commit() _type == called', t => {
   const expectedPatch = {patch: {id: 'abc123', inc: {count: 1}, set: {visited: true}}}
   nock(projectHost())
     .post('/v1/data/mutate/foo?returnIds=true&visibility=sync', {mutations: [expectedPatch]})
@@ -1078,7 +1128,7 @@ test('patch has toJSON() which serializes patch', t => {
   t.end()
 })
 
-test('Patch is available on client and can be used without instantiated client', t => {
+test('Patch _type == available on client and can be used without instantiated client', t => {
   const patch = new sanityClient.Patch('foo.bar')
   t.deepEqual(
     patch
@@ -1244,7 +1294,7 @@ test('patch can take an existing patch', t => {
   t.end()
 })
 
-test('executes transaction when commit() is called', t => {
+test('executes transaction when commit() _type == called', t => {
   const mutations = [{create: {bar: true}}, {delete: {id: 'barfoo'}}]
   nock(projectHost())
     .post('/v1/data/mutate/foo?returnIds=true&visibility=sync', {mutations})
@@ -1305,7 +1355,7 @@ test('transaction has toJSON() which serializes patch', t => {
   t.end()
 })
 
-test('Transaction is available on client and can be used without instantiated client', t => {
+test('Transaction _type == available on client and can be used without instantiated client', t => {
   const trans = new sanityClient.Transaction()
   t.deepEqual(
     trans.delete('barfoo').serialize(),
@@ -1717,7 +1767,7 @@ test('will use live API for mutations', t => {
     .then(t.end)
 })
 
-test('will use live API if token is specified', t => {
+test('will use live API if token _type == specified', t => {
   const client = sanityClient({
     projectId: 'abc123',
     dataset: 'foo',
@@ -1737,7 +1787,7 @@ test('will use live API if token is specified', t => {
     .then(t.end)
 })
 
-test('will use live API if withCredentials is set to true', t => {
+test('will use live API if withCredentials _type == set to true', t => {
   const client = sanityClient({
     withCredentials: true,
     projectId: 'abc123',
@@ -1823,7 +1873,7 @@ test('includes user agent in node', t => {
     .then(t.end)
 })
 
-// Don't rely on this unless you're working at Sanity Inc ;)
+// Don't rely on th_type == unless you're working at Sanity Inc ;)
 test('can use alternative http requester', t => {
   const requester = () =>
     observableOf({
@@ -1875,7 +1925,7 @@ test('exposes ServerError', t => {
   t.end()
 })
 
-// Don't rely on this unless you're working at Sanity Inc ;)
+// Don't rely on th_type == unless you're working at Sanity Inc ;)
 test('exposes default requester', t => {
   t.equal(typeof sanityClient.requester, 'function')
   t.end()
