@@ -59,7 +59,7 @@ test('can get and set config', t => {
   const client = sanityClient({projectId: 'abc123'})
   t.equal(client.config().projectId, 'abc123', 'constructor opts are set')
   t.equal(client.config({projectId: 'def456'}), client, 'returns client on set')
-  t.equal(client.config().projectId, 'def456', 'new config _type is set')
+  t.equal(client.config().projectId, 'def456', 'new config is set')
   t.end()
 })
 
@@ -91,7 +91,7 @@ test('can clone client', t => {
   t.end()
 })
 
-test('throws if no projectId _type is set', t => {
+test('throws if no projectId is set', t => {
   t.throws(sanityClient, /projectId/)
   t.end()
 })
@@ -404,7 +404,7 @@ test('can query for single document', t => {
     .then(t.end)
 })
 
-test('gives http statuscode as error if no body _type is present on errors', t => {
+test('gives http statuscode as error if no body is present on errors', t => {
   nock(projectHost())
     .get('/v1/data/doc/foo/abc123')
     .reply(400)
@@ -820,7 +820,7 @@ test('can apply unset()', t => {
   t.end()
 })
 
-test('throws if non-array _type is passed to unset()', t => {
+test('throws if non-array is passed to unset()', t => {
   t.throws(
     () =>
       getClient()
@@ -989,7 +989,7 @@ test('all patch methods throw on non-objects being passed as argument', t => {
   t.end()
 })
 
-test('executes patch when commit() _type is called', t => {
+test('executes patch when commit() is called', t => {
   const expectedPatch = {patch: {id: 'abc123', inc: {count: 1}, set: {visited: true}}}
   nock(projectHost())
     .post('/v1/data/mutate/foo?returnIds=true&visibility=sync', {mutations: [expectedPatch]})
@@ -1778,7 +1778,7 @@ test('will use live API if token is specified', t => {
     .then(t.end)
 })
 
-test('will use live API if withCredentials _type is set to true', t => {
+test('will use live API if withCredentials is set to true', t => {
   const client = sanityClient({
     withCredentials: true,
     projectId: 'abc123',
