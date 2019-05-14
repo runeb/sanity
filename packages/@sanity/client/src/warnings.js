@@ -28,12 +28,3 @@ exports.printNoApiVersionSpecifiedWarning = createWarningPrinter([
   'Using the Sanity client without specifying an API version is deprecated.',
   `See ${generateHelpUrl('js-client-api-version')}`
 ])
-
-exports.printApiVersionNextDayWarning = createWarningPrinter([
-  'You have set an API version that is in the future! -',
-  'according to your system clock, today is %s in Coordinated Universal Time (UTC).',
-  'You specified %s, which is "tomorrow". This will give unpredictable results,',
-  'as the meaning of that API version has not yet been declared. Unless you are',
-  'specifically using it to get a very newly released fix, you probably want to',
-  'use %s instead.'
-])

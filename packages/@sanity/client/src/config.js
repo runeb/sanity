@@ -99,37 +99,4 @@ exports.validateApiVersion = function validateApiVersion(apiVersion, nowOffset =
   if (!apiVersionValid) {
     throw new Error('Invalid API version string, expected `1` or date in format `YYYY-MM-DD`')
   }
-
-  const today = new Date(Date.now() + nowOffset)
-  const tomorrow = new Date(Date.now() + nowOffset)
-  tomorrow.setDate(today.getDate() + 1)
-
-  const todayUtc = getUtcDate(today)
-  const tomorrowUtc = getUtcDate(tomorrow)
-
-  if (apiVersion === tomorrowUtc) {
-    // The date specified is actually "tomorrow" in UTC terms, which is _allowed_,
-    // but might suddenly change behavior. Warn that the user probably wants to use
-    // todays UTC date, unless she means to use a hotfix (just released) version
-    warnings.printApiVersionNextDayWarning(today, todayUtc, apiVersion, todayUtc)
-  } else if (apiDate > tomorrow) {
-    // The date specified is in the future, which the API will reject. Since you will
-    // not be able to use the API for anything, throwing is the only logical choice
-    throw new Error(
-      [
-        'You have set an API version that is in the future! -',
-        `according to your system clock, today is ${todayUtc} in Coordinated Universal Time.`,
-        `You specified ${apiVersion}, which could introduce breaking changes given the date is`,
-        `in the future. You probably want to use todays UTC date instead (${todayUtc}).`
-      ].join(' ')
-    )
-  }
-}
-
-function getUtcDate(date) {
-  return `${date.getUTCFullYear()}-${padDate(date.getUTCMonth() + 1)}-${padDate(date.getUTCDate())}`
-}
-
-function padDate(date) {
-  return date < 10 ? `0${date}` : `${date}`
 }

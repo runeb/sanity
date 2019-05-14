@@ -59,7 +59,7 @@ test('can get and set config', t => {
   const client = sanityClient({projectId: 'abc123'})
   t.equal(client.config().projectId, 'abc123', 'constructor opts are set')
   t.equal(client.config({projectId: 'def456'}), client, 'returns client on set')
-  t.equal(client.config().projectId, 'def456', 'new config _type == set')
+  t.equal(client.config().projectId, 'def456', 'new config _type is set')
   t.end()
 })
 
@@ -91,7 +91,7 @@ test('can clone client', t => {
   t.end()
 })
 
-test('throws if no projectId _type == set', t => {
+test('throws if no projectId _type is set', t => {
   t.throws(sanityClient, /projectId/)
   t.end()
 })
@@ -105,15 +105,6 @@ test('throws on invalid dataset names', t => {
   t.throws(
     () => sanityClient({projectId: 'abc123', dataset: '*foo*'}),
     /Datasets can only contain/i
-  )
-  t.end()
-})
-
-test('throws on future api version dates', t => {
-  t.throws(
-    () =>
-      sanityClient({projectId: 'abc123', dataset: 'foo', useCdn: true, apiVersion: '2099-12-13'}),
-    /future.*2099-12-13/
   )
   t.end()
 })
@@ -342,7 +333,7 @@ test('handles api errors gracefully', t => {
   const response = {
     statusCode: 403,
     error: 'Forbidden',
-    message: 'You are not allowed to access th_type == resource'
+    message: 'You are not allowed to access this resource'
   }
 
   nock(projectHost())
@@ -413,7 +404,7 @@ test('can query for single document', t => {
     .then(t.end)
 })
 
-test('gives http statuscode as error if no body _type == present on errors', t => {
+test('gives http statuscode as error if no body _type is present on errors', t => {
   nock(projectHost())
     .get('/v1/data/doc/foo/abc123')
     .reply(400)
@@ -829,7 +820,7 @@ test('can apply unset()', t => {
   t.end()
 })
 
-test('throws if non-array _type == passed to unset()', t => {
+test('throws if non-array _type is passed to unset()', t => {
   t.throws(
     () =>
       getClient()
@@ -998,7 +989,7 @@ test('all patch methods throw on non-objects being passed as argument', t => {
   t.end()
 })
 
-test('executes patch when commit() _type == called', t => {
+test('executes patch when commit() _type is called', t => {
   const expectedPatch = {patch: {id: 'abc123', inc: {count: 1}, set: {visited: true}}}
   nock(projectHost())
     .post('/v1/data/mutate/foo?returnIds=true&visibility=sync', {mutations: [expectedPatch]})
@@ -1128,7 +1119,7 @@ test('patch has toJSON() which serializes patch', t => {
   t.end()
 })
 
-test('Patch _type == available on client and can be used without instantiated client', t => {
+test('Patch is available on client and can be used without instantiated client', t => {
   const patch = new sanityClient.Patch('foo.bar')
   t.deepEqual(
     patch
@@ -1294,7 +1285,7 @@ test('patch can take an existing patch', t => {
   t.end()
 })
 
-test('executes transaction when commit() _type == called', t => {
+test('executes transaction when commit() is called', t => {
   const mutations = [{create: {bar: true}}, {delete: {id: 'barfoo'}}]
   nock(projectHost())
     .post('/v1/data/mutate/foo?returnIds=true&visibility=sync', {mutations})
@@ -1355,7 +1346,7 @@ test('transaction has toJSON() which serializes patch', t => {
   t.end()
 })
 
-test('Transaction _type == available on client and can be used without instantiated client', t => {
+test('Transaction is available on client and can be used without instantiated client', t => {
   const trans = new sanityClient.Transaction()
   t.deepEqual(
     trans.delete('barfoo').serialize(),
@@ -1767,7 +1758,7 @@ test('will use live API for mutations', t => {
     .then(t.end)
 })
 
-test('will use live API if token _type == specified', t => {
+test('will use live API if token is specified', t => {
   const client = sanityClient({
     projectId: 'abc123',
     dataset: 'foo',
@@ -1787,7 +1778,7 @@ test('will use live API if token _type == specified', t => {
     .then(t.end)
 })
 
-test('will use live API if withCredentials _type == set to true', t => {
+test('will use live API if withCredentials _type is set to true', t => {
   const client = sanityClient({
     withCredentials: true,
     projectId: 'abc123',
@@ -1873,7 +1864,7 @@ test('includes user agent in node', t => {
     .then(t.end)
 })
 
-// Don't rely on th_type == unless you're working at Sanity Inc ;)
+// Don't rely on this unless you're working at Sanity Inc ;)
 test('can use alternative http requester', t => {
   const requester = () =>
     observableOf({
@@ -1925,7 +1916,7 @@ test('exposes ServerError', t => {
   t.end()
 })
 
-// Don't rely on th_type == unless you're working at Sanity Inc ;)
+// Don't rely on this unless you're working at Sanity Inc ;)
 test('exposes default requester', t => {
   t.equal(typeof sanityClient.requester, 'function')
   t.end()

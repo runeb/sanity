@@ -61,29 +61,3 @@ test('warns a token is provided together with useCdn:true (and not in browser)',
   )
   sanityClient({projectId: 'abc123', token: 'foo', useCdn: true, apiVersion: '1'})
 })
-
-test('warns api version is tomorrow', t => {
-  const restore = combine(
-    stub(console, 'warn', message => {
-      t.equal(
-        message,
-        'You have set an API version that is in the future! - according to your system clock, today is %s in Coordinated Universal Time (UTC). You specified %s, which is "tomorrow". This will give unpredictable results, as the meaning of that API version has not yet been declared. Unless you are specifically using it to get a very newly released fix, you probably want to use %s instead.'
-      )
-      restore()
-      t.end()
-    })
-  )
-
-  const tomorrow = new Date()
-  tomorrow.setDate(tomorrow.getDate() + 1)
-
-  sanityClient({projectId: 'abc123', token: 'foo', useCdn: true, apiVersion: getUtcDate(tomorrow)})
-})
-
-function getUtcDate(date) {
-  return `${date.getUTCFullYear()}-${padDate(date.getUTCMonth() + 1)}-${padDate(date.getUTCDate())}`
-}
-
-function padDate(date) {
-  return date < 10 ? `0${date}` : `${date}`
-}
