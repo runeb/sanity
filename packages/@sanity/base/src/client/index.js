@@ -25,5 +25,10 @@ Object.defineProperty(configuredClient, 'default', {
   }
 })
 
+// Temporary!
+;(() => {
+  throw new Error('Trigger the global error handler!')
+})()
+
 // Expose as CJS to allow Node scripts to consume it without `.default`
 module.exports = configuredClient
